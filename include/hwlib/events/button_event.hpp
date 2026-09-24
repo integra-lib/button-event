@@ -4,7 +4,7 @@
 #include <functional>
 #include <utility>
 
-namespace integra
+namespace hwlib::events
 {
 
 inline constexpr std::int64_t DEFAULT_CONFIRM_MS    = 20;
@@ -166,4 +166,4 @@ private:
     ChangedCallback m_onChanged;
 };
 
-} // namespace integra
+} // namespace hwlib::events

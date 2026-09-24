@@ -1,16 +1,16 @@
 #include <gtest/gtest.h>
 
 #include <cstdint>
-#include <integra/button_event.hpp>
+#include <hwlib/events/button_event.hpp>
 #include <string>
 #include <vector>
 
 namespace
 {
 
-using integra::ButtonAction;
-using integra::ButtonEventConfig;
-using integra::ButtonEventCore;
+using hwlib::events::ButtonAction;
+using hwlib::events::ButtonEventConfig;
+using hwlib::events::ButtonEventCore;
 
 constexpr ButtonEventConfig CONFIG{.confirmMs = 20, .minPressMs = 200, .longPressMs = 1000};
 

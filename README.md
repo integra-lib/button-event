@@ -2,23 +2,23 @@
 
 Debounce one button and classify the press: short, long, or too brief to mean anything.
 
-Part of [integra-lib](https://github.com/integra-lib) — architecture-independent C++20
+Part of [hwlib](https://github.com/integra-lib) — architecture-independent C++20
 components shared between firmware projects. Header-only,
 no exceptions, no RTTI.
 
 ## Use it
 
 ```bash
-git submodule add git@github.com:integra-lib/button-event.git external/integra/button-event
+git submodule add git@github.com:integra-lib/button-event.git external/hwlib/button-event
 ```
 
 ```cmake
-add_subdirectory(external/integra/button-event)
-target_link_libraries(app PRIVATE Integra::button_event)
+add_subdirectory(external/hwlib/button-event)
+target_link_libraries(app PRIVATE Hwlib::button_event)
 ```
 
 ```cpp
-#include <integra/button_event.hpp>
+#include <hwlib/events/button_event.hpp>
 ```
 
 Each component carries its own include directory, so this header stays unreachable
@@ -27,7 +27,7 @@ a build that happens to work.
 
 ## What it does and does not do
 
-`integra::ButtonEventCore` is the state machine only. It owns no pin, no timer and no
+`hwlib::events::ButtonEventCore` is the state machine only. It owns no pin, no timer and no
 clock — it is fed three things and answers what the caller's timers should do next:
 
 ```cpp
@@ -40,7 +40,7 @@ clock — it is fed three things and answers what the caller's timers should do 
 Acting on it is the caller's half of the contract, which is why it is `[[nodiscard]]`.
 
 ```cpp
-integra::ButtonEventCore button{{.confirmMs = 20, .minPressMs = 200, .longPressMs = 1000}};
+hwlib::events::ButtonEventCore button{{.confirmMs = 20, .minPressMs = 200, .longPressMs = 1000}};
 button.SetOnShortPress([] { ToggleView(); });
 button.SetOnLongPress([] { EnterService(); });
 button.SetOnChanged([](bool pressed) { NotifyActivity(pressed); });
@@ -71,7 +71,7 @@ A Zephyr adapter is the other half of what used to be one class:
 class ZephyrButton
 {
 public:
-    ZephyrButton(IGpioInputPin& pin, integra::ButtonEventConfig config)
+    ZephyrButton(IGpioInputPin& pin, hwlib::events::ButtonEventConfig config)
         : m_pin{pin}, m_core{config}
     {
         k_work_init_delayable(&m_confirm.work, ConfirmHandler);
@@ -83,18 +83,18 @@ public:
     }
 
 private:
-    void Apply(integra::ButtonAction action)
+    void Apply(hwlib::events::ButtonAction action)
     {
         switch (action)
         {
-        case integra::ButtonAction::eScheduleConfirm:
+        case hwlib::events::ButtonAction::eScheduleConfirm:
             k_work_reschedule(&m_confirm.work, K_MSEC(m_config.confirmMs));
             break;
-        case integra::ButtonAction::eStartLongPress:
+        case hwlib::events::ButtonAction::eStartLongPress:
             m_longPressTimer.Start(K_MSEC(m_config.longPressMs));
             break;
-        case integra::ButtonAction::eStopLongPress: m_longPressTimer.Stop(); break;
-        case integra::ButtonAction::eNone: break;
+        case hwlib::events::ButtonAction::eStopLongPress: m_longPressTimer.Stop(); break;
+        case hwlib::events::ButtonAction::eNone: break;
         }
     }
     // The confirm work runs on the system work queue and samples the pin there;
@@ -109,9 +109,9 @@ Every component is released on its own, tagged `vX.Y.Z`. Pre-1.0, a minor releas
 break the API, which is why dependants accept a single minor.
 
 ```bash
-git -C external/integra/button-event fetch --tags
-git -C external/integra/button-event checkout v0.2.0
-git add external/integra/button-event && git commit -m "build: bump button-event to v0.2.0"
+git -C external/hwlib/button-event fetch --tags
+git -C external/hwlib/button-event checkout v0.2.0
+git add external/hwlib/button-event && git commit -m "build: bump button-event to v0.2.0"
 ```
 
 ## Coming from a174-hardware's button-event
